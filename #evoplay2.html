@@ -1,0 +1,118 @@
+#evoplay2.0
+
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рулетка Симулатор</title>
+    <style>
+        .number-button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #lastFourteenNumbersDisplay {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Рулетка Симулатор</h1>
+
+    <p>Изберете числа като натиснете бутон:</p>
+    <div id="numberButtons"></div>
+
+    <div id="lastFourteenNumbersDisplay">Последни 14 числа: (Празно)</div>
+    <button onclick="startSimulation()">Стартирай симулация</button>
+
+    <p id="result"></p>
+
+    <script>
+        const totalNumbers = 37; // От 0 до 36
+        let lastFourteenNumbers = [];
+
+        // Генериране на бутони за числата от 0 до 36
+        function createNumberButtons() {
+            const numberButtonsContainer = document.getElementById('numberButtons');
+            for (let i = 0; i < totalNumbers; i++) {
+                let button = document.createElement('button');
+                button.textContent = i;
+                button.classList.add('number-button');
+                button.onclick = () => addNumber(i);
+                numberButtonsContainer.appendChild(button);
+            }
+        }
+
+        // Добавяне на число към последните 14
+        function addNumber(number) {
+            if (lastFourteenNumbers.length >= 14) {
+                lastFourteenNumbers.shift(); // Премахва най-старото число, ако има повече от 14
+            }
+            lastFourteenNumbers.push(number); // Добавя новото число
+            updateLastFourteenNumbersDisplay(); // Обновява дисплея на последните 14 числа
+        }
+
+        // Обновяване на визуализацията на последните 14 числа
+        function updateLastFourteenNumbersDisplay() {
+            const display = document.getElementById('lastFourteenNumbersDisplay');
+            if (lastFourteenNumbers.length === 0) {
+                display.textContent = "Последни 14 числа: (Празно)";
+            } else {
+                display.textContent = "Последни 14 числа: " + lastFourteenNumbers.join(", ");
+            }
+        }
+
+        // Функция за генериране на случайно число от 0 до 36, но без последните 14 числа
+        function generateRandomNumber() {
+            let availableNumbers = [];
+            for (let i = 0; i < totalNumbers; i++) {
+                if (!lastFourteenNumbers.includes(i)) {
+                    availableNumbers.push(i); // Само числа, които не са в последните 14
+                }
+            }
+            const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+            return availableNumbers[randomIndex];
+        }
+
+        // Функция за стартиране на симулацията
+        function startSimulation() {
+            if (lastFourteenNumbers.length < 14) {
+                alert("Моля изберете поне 14 числа.");
+                return;
+            }
+
+            const simulations = 37; // 37 симулации
+            let numberOccurrences = Array(totalNumbers).fill(0); // Нулираме броя на всички числа
+
+            // Генериране на случайни числа и броене на честотата
+            for (let i = 0; i < simulations; i++) {
+                let generatedNumber = generateRandomNumber();
+                numberOccurrences[generatedNumber]++;
+            }
+
+            // Намиране на топ 4 най-рядко срещани числа
+            let sortedNumbers = numberOccurrences
+                .map((count, number) => ({ number, count }))
+                .sort((a, b) => a.count - b.count) // Подреждаме по най-малка честота
+                .slice(0, 4); // Взима първите 4 числа с най-малко появи
+
+            let resultText = sortedNumbers
+                .map((item, index) => `Число ${item.number}: ${(item.count / simulations * 100).toFixed(2)}%`)
+                .join("<br>");
+
+            // Показване на резултата
+            document.getElementById("result").innerHTML = `
+                Топ 4 най-рядко срещани числа:<br>
+                ${resultText}
+            `;
+        }
+
+        // Създаване на бутоните при зареждане на страницата
+        createNumberButtons();
+    </script>
+</body>
+</html>
